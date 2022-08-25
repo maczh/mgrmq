@@ -1,0 +1,29 @@
+go:
+  application:
+    name: mgrmq
+    port: 8091
+  config:
+    server: http://59.56.77.23:58848/
+    server_type: nacos
+    env: test
+    type: .yml
+    mid: "-"
+    used: rabbitmq,nacos,mongodb
+    prefix:
+      mysql: mysql-oss
+      mongodb: mongo-fcp
+      redis: redis
+      ssdb: ssdb
+      rabbitmq: rabbitmq
+      nacos: nacos
+      influxdb: influxdb-oss
+  log:
+    req: mgrmqRequestLog
+  logger:
+    level: debug
+    out: console,file
+    file: /opt/logs/mgrmq
+rmq:
+  config:
+    prefix: mgrmq   #文件名前缀
+    source: nacos    #配置来源 file-本地文件 nacos-配置中心

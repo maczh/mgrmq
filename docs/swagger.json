@@ -1,0 +1,91 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {},
+        "version": "1.0.0(mgrmq)"
+    },
+    "paths": {
+        "/msg/resend": {
+            "post": {
+                "description": "重新发送指定时间段内的失败消息",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "重新发送指定时间段内的失败消息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "消息队列名，不传为配置中的所有队列",
+                        "name": "queue",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始时间，格式 yyyy-MM-dd HH:mm:ss,不传默认为当天0点",
+                        "name": "start",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间，格式 yyyy-MM-dd HH:mm:ss,不传默认为当前时间",
+                        "name": "end",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/msg/send": {
+            "post": {
+                "description": "发送一条消息到消息队列",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "发送一条消息到消息队列",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "消息队列各",
+                        "name": "queue",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "消息内容，必须是JSON格式",
+                        "name": "msg",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+mgrmq:
+  jobs:
+    - queue: q1                 #消息队列名称
+      name: 队列1                #任务名称
+      retry: 3                  #重试次数
+      interval: 5               #死信队列延时，单位为秒
+      queueDx: q1_d             #死信队列名称
+      callType: service         #调用类型  service-微服务  http-http或https接口调用
+      service: openapi-zone     #微服务的服务名
+      uri: /api/zone/get        #微服务接口路径
+      failLog: q1FailLog        #连续重试彻底失败后记录失败的表名称
+      reqLog: q1CallLog         #接口调用日志表名
+      retryOn: error            #重试条件 error-接口连接错误  failed-接口未返回成功标志
+    - queue: q2
+      name: 队列2
+      retry: 2
+      interval: 20
+      queueDx: q2_d
+      callType: http
+      url: https://white.cdncloud.com:8442/api/v1/oss/get      #http接口完整地址
+      method: POST                                              #接口请求方法 GET/POST
+      contentType: application/x-www-form-urlencoded            #接口内容类型，支持application/x-www-form-urlencoded与application/json两种
+      success: "\"status\":1,"                                  #接口执行成功标识
+      failLog: q2FailLog
+      reqLog: q2CallLog
+      retryOn: failed
+    - queue: q3
+      name: 队列3
+      retry: 3
+      interval: 60
+      queueDx: q3_d
+      callType: service
+      service: oss-server
+      uri: /api/v1/oss/list
+      failLog: q3FailLog
+      reqLog: q3CallLog
+      retryOn: error

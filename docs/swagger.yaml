@@ -1,0 +1,59 @@
+info:
+  contact: {}
+  version: 1.0.0(mgrmq)
+paths:
+  /msg/resend:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 重新发送指定时间段内的失败消息
+      parameters:
+      - description: 消息队列名，不传为配置中的所有队列
+        in: formData
+        name: queue
+        type: string
+      - description: 开始时间，格式 yyyy-MM-dd HH:mm:ss,不传默认为当天0点
+        in: formData
+        name: start
+        type: string
+      - description: 结束时间，格式 yyyy-MM-dd HH:mm:ss,不传默认为当前时间
+        in: formData
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 重新发送指定时间段内的失败消息
+      tags:
+      - 发布
+  /msg/send:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 发送一条消息到消息队列
+      parameters:
+      - description: 消息队列各
+        in: formData
+        name: queue
+        required: true
+        type: string
+      - description: 消息内容，必须是JSON格式
+        in: formData
+        name: msg
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 发送一条消息到消息队列
+      tags:
+      - 发布
+swagger: "2.0"
