@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/maczh/logs"
@@ -11,20 +12,32 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 )
 
 const config_file = "mgrmq.yml"
 
+//初始化命令行参数
+func parseArgs() string {
+	var configFile string
+	flag.StringVar(&configFile, "f", os.Args[0]+".yml", "yml配置文件名")
+	flag.Parse()
+	path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	if !strings.Contains(configFile, "/") {
+		configFile = path + "/" + configFile
+	}
+	return configFile
+}
+
 //@title	RabbitMQ通用消息中转与处理模块
 //@version 	1.0.0(mgrmq)
 //@description	RabbitMQ通用消息中转与处理模块
-
 func main() {
 	//初始化配置，自动连接数据库和Nacos服务注册
-	path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	mgconfig.InitConfig(path + "/" + config_file)
+	configFile := parseArgs()
+	mgconfig.InitConfig(configFile)
 
 	//GIN的模式，生产环境可以设置成release
 	gin.SetMode("debug")
@@ -52,7 +65,6 @@ func main() {
 			logs.Error("HTTP server listen: " + err.Error())
 		}
 	}()
-
 
 	// 等待中断信号以优雅地关闭服务器（设置 5 秒的超时时间）
 	signalChan := make(chan os.Signal)

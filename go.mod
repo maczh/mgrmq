@@ -6,11 +6,11 @@ require (
 	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.1
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
-	github.com/maczh/gintool v1.0.7
+	github.com/maczh/gintool v1.0.8
 	github.com/maczh/logs v1.0.4
 	github.com/maczh/mgcache v1.0.1
-	github.com/maczh/mgcall v1.0.8
-	github.com/maczh/mgconfig v1.1.10
+	github.com/maczh/mgcall v1.1.0
+	github.com/maczh/mgconfig v1.1.11
 	github.com/maczh/mgtrace v1.0.1
 	github.com/maczh/utils v1.0.9
 	github.com/nacos-group/nacos-sdk-go v1.1.1
