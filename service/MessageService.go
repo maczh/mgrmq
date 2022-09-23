@@ -14,7 +14,7 @@ func NewMessageService() *MessageService {
 }
 
 func (s *MessageService) Send(queue, msg string) mgresult.Result {
-	if _,ok := jobConfigs[queue]; !ok {
+	if _, ok := queues[queue]; !ok {
 		return mgresult.Error(-1, "消息队列名称不在配置中")
 	}
 	mgconfig.RabbitSendMessage(queue, msg)

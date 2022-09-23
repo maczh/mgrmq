@@ -13,13 +13,14 @@ import (
 	"path/filepath"
 )
 
-type JobService struct {}
+type JobService struct{}
 
 func NewJobService() *JobService {
 	return &JobService{}
 }
 
 var jobConfigs = make(map[string]model.MQjob)
+var queues = make(map[string]string)
 
 func loadConfig() (model.MQjobConfig, error) {
 	prefix := mgconfig.GetConfigString("rmq.config.prefix")
@@ -29,9 +30,9 @@ func loadConfig() (model.MQjobConfig, error) {
 		ymlFile := prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type")
 		path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 		ymlFile = path + "/" + ymlFile
-		ymlData,err = ioutil.ReadFile(ymlFile)
+		ymlData, err = ioutil.ReadFile(ymlFile)
 		if err != nil {
-			logs.Error("读取本地配置文件{}失败:{}",ymlFile,err.Error())
+			logs.Error("读取本地配置文件{}失败:{}", ymlFile, err.Error())
 			return model.MQjobConfig{}, err
 		}
 	} else {
@@ -51,8 +52,12 @@ func loadConfig() (model.MQjobConfig, error) {
 		return jobConfig, err
 	}
 	logs.Debug("mgrmq配置解析结果:{}", jobConfig)
-	for _,job := range jobConfig.Mgrmq.Jobs {
+	for _, job := range jobConfig.Mgrmq.Jobs {
 		jobConfigs[job.Queue] = job
+		queues[job.Queue] = "1"
+		if job.QueueDx != "" {
+			queues[job.QueueDx] = "1"
+		}
 	}
 	return jobConfig, err
 }
@@ -73,7 +78,7 @@ func getConfigUrl(prefix string) string {
 	return configUrl
 }
 
-func (js *JobService)Init() {
+func (js *JobService) Init() {
 	jobConfig, err := loadConfig()
 	if err != nil {
 		logs.Error("加载配置失败:{}", err.Error())
