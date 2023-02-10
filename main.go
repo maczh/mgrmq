@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/maczh/logs"
-	"github.com/maczh/mgconfig"
+	"github.com/maczh/mgin"
+	"github.com/maczh/mgin/config"
+	"github.com/maczh/mgin/logs"
+	"github.com/maczh/mgrabbit"
 	"github.com/maczh/mgrmq/service"
 	"net/http"
 	"os"
@@ -19,7 +21,7 @@ import (
 
 const config_file = "mgrmq.yml"
 
-//初始化命令行参数
+// 初始化命令行参数
 func parseArgs() string {
 	var configFile string
 	flag.StringVar(&configFile, "f", os.Args[0]+".yml", "yml配置文件名")
@@ -31,16 +33,18 @@ func parseArgs() string {
 	return configFile
 }
 
-//@title	RabbitMQ通用消息中转与处理模块
-//@version 	1.0.0(mgrmq)
-//@description	RabbitMQ通用消息中转与处理模块
+// @title	RabbitMQ通用消息中转与处理模块
+// @version 	1.0.0(mgrmq)
+// @description	RabbitMQ通用消息中转与处理模块
 func main() {
 	//初始化配置，自动连接数据库和Nacos服务注册
 	configFile := parseArgs()
-	mgconfig.InitConfig(configFile)
+	mgin.Init(configFile)
 
 	//GIN的模式，生产环境可以设置成release
 	gin.SetMode("debug")
+
+	mgin.MGin.Use("rabbitmq", mgrabbit.Rabbit.Init, mgrabbit.Rabbit.Close, nil)
 
 	//任务服务初始化
 	service.NewJobService().Init()
@@ -48,7 +52,7 @@ func main() {
 	engine := setupRouter()
 
 	server := &http.Server{
-		Addr:    ":" + mgconfig.GetConfigString("go.application.port"),
+		Addr:    fmt.Sprintf(":%d", config.Config.App.Port),
 		Handler: engine,
 	}
 
@@ -57,7 +61,7 @@ func main() {
 	logs.Info("|             MGRMQ 1.0.0           |")
 	logs.Info("|-----------------------------------|")
 	logs.Info("|  Go Http Server Start Successful  |")
-	logs.Info("|    Port:" + mgconfig.GetConfigString("go.application.port") + "     Pid:" + fmt.Sprintf("%d", os.Getpid()) + "        |")
+	logs.Info("|    Port:" + config.Config.GetConfigString("go.application.port") + "     Pid:" + fmt.Sprintf("%d", os.Getpid()) + "        |")
 	logs.Info("|-----------------------------------|")
 
 	go func() {
@@ -72,7 +76,7 @@ func main() {
 	sig := <-signalChan
 	logs.Error("Get Signal:" + sig.String())
 	logs.Error("Shutdown Server ...")
-	mgconfig.SafeExit()
+	mgin.MGin.SafeExit()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {

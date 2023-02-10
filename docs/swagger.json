@@ -1,6 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
+        "description": "RabbitMQ通用消息中转与处理模块",
+        "title": "RabbitMQ通用消息中转与处理模块",
         "contact": {},
         "version": "1.0.0(mgrmq)"
     },
@@ -64,14 +66,14 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "消息队列各",
+                        "description": "消息队列名",
                         "name": "queue",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "消息内容，必须是JSON格式",
+                        "description": "消息内容，必须是mgin中的client.Options格式",
                         "name": "msg",
                         "in": "formData",
                         "required": true

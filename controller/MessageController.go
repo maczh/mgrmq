@@ -2,7 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/maczh/gintool/mgresult"
+	"github.com/gin-gonic/gin"
+	"github.com/maczh/mgin/client"
+	"github.com/maczh/mgin/logs"
+	"github.com/maczh/mgin/models"
+	"github.com/maczh/mgrmq/model"
 	"github.com/maczh/mgrmq/service"
 )
 
@@ -15,22 +19,35 @@ var msgService = service.NewMessageService()
 // @Accept	x-www-form-urlencoded
 // @Produce json
 // @Param	queue formData string true "消息队列名"
-// @Param	msg formData string true "消息内容，必须是JSON格式"
+// @Param	msg formData string true "消息内容，必须是mgin中的client.Options格式"
 // @Success 200 {string} string	"ok"
 // @Router	/msg/send [post]
-func SendMessage(params map[string]string) mgresult.Result {
-	queue, msg := params["queue"], params["msg"]
+func SendMessage(c *gin.Context) models.Result[any] {
+	var req model.SendReq
+	var err error
+	switch c.ContentType() {
+	case gin.MIMEJSON:
+		err = c.ShouldBindJSON(&req)
+	default:
+		err = c.ShouldBind(&req)
+	}
+	if err != nil {
+		logs.Error("绑定入参错误:{}", err.Error())
+		return models.Error(-1, "入参模式错误")
+	}
+	queue, msg := req.Queue, req.Msg
 	if queue == "" {
-		return mgresult.Error(-1, "消息队列名称不可为空")
+		return models.Error(-1, "消息队列名称不可为空")
 	}
 	if msg == "" {
-		return mgresult.Error(-1, "消息内容不可为空")
+		return models.Error(-1, "消息内容不可为空")
 	}
-	var m map[string]string
-	err := json.Unmarshal([]byte(msg), &m)
-	if err != nil {
-		return mgresult.Error(-1, "消息内容不是JSON格式")
+	var msgBody client.Options
+	err = json.Unmarshal([]byte(msg), &msgBody)
+	if err != nil || msgBody.Method == "" {
+		return models.Error(-1, "消息内容不正确")
 	}
+
 	return msgService.Send(queue, msg)
 }
 
@@ -45,6 +62,18 @@ func SendMessage(params map[string]string) mgresult.Result {
 // @Param	end formData string false "结束时间，格式 yyyy-MM-dd HH:mm:ss,不传默认为当前时间"
 // @Success 200 {string} string	"ok"
 // @Router	/msg/resend [post]
-func ReSendFailedMessage(params map[string]string) mgresult.Result {
-	return msgService.ReSend(params["queue"], params["start"], params["end"])
+func ReSendFailedMessage(c *gin.Context) models.Result[any] {
+	var req model.ReSendReq
+	var err error
+	switch c.ContentType() {
+	case gin.MIMEJSON:
+		err = c.ShouldBindJSON(&req)
+	default:
+		err = c.ShouldBind(&req)
+	}
+	if err != nil {
+		logs.Error("绑定入参错误:{}", err.Error())
+		return models.Error(-1, "入参模式错误")
+	}
+	return msgService.ReSend(req.Queue, req.Start, req.End)
 }

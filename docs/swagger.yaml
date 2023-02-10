@@ -1,5 +1,7 @@
 info:
   contact: {}
+  description: RabbitMQ通用消息中转与处理模块
+  title: RabbitMQ通用消息中转与处理模块
   version: 1.0.0(mgrmq)
 paths:
   /msg/resend:
@@ -36,12 +38,12 @@ paths:
       - application/x-www-form-urlencoded
       description: 发送一条消息到消息队列
       parameters:
-      - description: 消息队列各
+      - description: 消息队列名
         in: formData
         name: queue
         required: true
         type: string
-      - description: 消息内容，必须是JSON格式
+      - description: 消息内容，必须是mgin中的client.Options格式
         in: formData
         name: msg
         required: true

@@ -1,38 +1,38 @@
 package mongo
 
 import (
-	"github.com/maczh/logs"
-	"github.com/maczh/mgconfig"
+	"github.com/maczh/mgin/db"
+	"github.com/maczh/mgin/logs"
+	"github.com/maczh/mgin/utils"
 	"github.com/maczh/mgrmq/model"
-	"github.com/maczh/utils"
 	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
-type FailLogMgo struct {}
+type FailLogMgo struct{}
 
-func NewFailLogMgo() *FailLogMgo  {
+func NewFailLogMgo() *FailLogMgo {
 	return &FailLogMgo{}
 }
 
 func (f *FailLogMgo) Save(collectionName string, log model.FailLog) error {
-	mongo,err := mgconfig.GetMongoConnection()
+	mongo, err := db.Mongo.GetConnection()
 	if err != nil {
-		logs.Error("MongoDB connection error:{}",err.Error())
+		logs.Error("MongoDB connection error:{}", err.Error())
 		return err
 	}
-	defer mgconfig.ReturnMongoConnection(mongo)
+	defer db.Mongo.ReturnConnection(mongo)
 	err = mongo.C(collectionName).Insert(log)
 	return err
 }
 
 func (f *FailLogMgo) List(collection, start, end string) ([]model.FailLog, error) {
-	mongo,err := mgconfig.GetMongoConnection()
+	mongo, err := db.Mongo.GetConnection()
 	if err != nil {
-		logs.Error("MongoDB connection error:{}",err.Error())
-		return nil,err
+		logs.Error("MongoDB connection error:{}", err.Error())
+		return nil, err
 	}
-	defer mgconfig.ReturnMongoConnection(mongo)
+	defer db.Mongo.ReturnConnection(mongo)
 	var logs []model.FailLog
 	if start == "" {
 		start = utils.ToDateTimeString(time.Now())
@@ -44,8 +44,8 @@ func (f *FailLogMgo) List(collection, start, end string) ([]model.FailLog, error
 		timqQuery["$lt"] = end
 	}
 	query := bson.M{
-		"time" : timqQuery,
+		"time": timqQuery,
 	}
 	err = mongo.C(collection).Find(query).All(&logs)
-	return logs,err
+	return logs, err
 }

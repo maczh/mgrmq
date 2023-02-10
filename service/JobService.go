@@ -2,8 +2,9 @@ package service
 
 import (
 	"github.com/levigross/grequests"
-	"github.com/maczh/logs"
-	"github.com/maczh/mgconfig"
+	"github.com/maczh/mgin/config"
+	"github.com/maczh/mgin/logs"
+	"github.com/maczh/mgrabbit"
 	"github.com/maczh/mgrmq/model"
 	"github.com/maczh/mgrmq/rabbitmq"
 	"github.com/nacos-group/nacos-sdk-go/common/logger"
@@ -23,11 +24,11 @@ var jobConfigs = make(map[string]model.MQjob)
 var queues = make(map[string]string)
 
 func loadConfig() (model.MQjobConfig, error) {
-	prefix := mgconfig.GetConfigString("rmq.config.prefix")
+	prefix := config.Config.GetConfigString("rmq.config.prefix")
 	ymlData := []byte{}
 	var err error
-	if mgconfig.GetConfigString("rmq.config.source") == "file" {
-		ymlFile := prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type")
+	if config.Config.GetConfigString("rmq.config.source") == "file" {
+		ymlFile := prefix + config.Config.GetConfigString("go.config.mid") + config.Config.GetConfigString("go.config.env") + config.Config.GetConfigString("go.config.type")
 		path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 		ymlFile = path + "/" + ymlFile
 		ymlData, err = ioutil.ReadFile(ymlFile)
@@ -63,17 +64,17 @@ func loadConfig() (model.MQjobConfig, error) {
 }
 
 func getConfigUrl(prefix string) string {
-	serverType := mgconfig.GetConfigString("go.config.server_type")
-	configUrl := mgconfig.GetConfigString("go.config.server")
+	serverType := config.Config.GetConfigString("go.config.server_type")
+	configUrl := config.Config.GetConfigString("go.config.server")
 	switch serverType {
-	case "nacos":
-		configUrl = configUrl + "nacos/v1/cs/configs?group=DEFAULT_GROUP&dataId=" + prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type")
+	case "nacos", "":
+		configUrl = configUrl + "nacos/v1/cs/configs?group=DEFAULT_GROUP&dataId=" + prefix + config.Config.GetConfigString("go.config.mid") + config.Config.GetConfigString("go.config.env") + config.Config.GetConfigString("go.config.type")
 	case "consul":
-		configUrl = configUrl + "v1/kv/" + prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type") + "?dc=dc1&raw=true"
+		configUrl = configUrl + "v1/kv/" + prefix + config.Config.GetConfigString("go.config.mid") + config.Config.GetConfigString("go.config.env") + config.Config.GetConfigString("go.config.type") + "?dc=dc1&raw=true"
 	case "springconfig":
-		configUrl = configUrl + prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type")
+		configUrl = configUrl + prefix + config.Config.GetConfigString("go.config.mid") + config.Config.GetConfigString("go.config.env") + config.Config.GetConfigString("go.config.type")
 	default:
-		configUrl = configUrl + prefix + mgconfig.GetConfigString("go.config.mid") + mgconfig.GetConfigString("go.config.env") + mgconfig.GetConfigString("go.config.type")
+		configUrl = configUrl + prefix + config.Config.GetConfigString("go.config.mid") + config.Config.GetConfigString("go.config.env") + config.Config.GetConfigString("go.config.type")
 	}
 	return configUrl
 }
@@ -101,9 +102,9 @@ func (js *JobService) Init() {
 		if job.Interval < 1 {
 			logs.Error("死信队列延时interval值不能小于1，单位是秒")
 		}
-		mgconfig.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
+		mgrabbit.Rabbit.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
 		handler := rabbitmq.NewQueueHandler(job)
-		mgconfig.RabbitMessageListener(job.Queue, handler.Listening)
+		mgrabbit.Rabbit.RabbitMessageListener(job.Queue, handler.Listening)
 		logs.Debug("正在侦听{}队列", job.Queue)
 	}
 	logs.Debug("所有队列侦听任务初始化均已完成")

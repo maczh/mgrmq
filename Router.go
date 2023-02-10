@@ -3,19 +3,20 @@ package main
 import (
 	"github.com/ekyoung/gin-nice-recovery"
 	"github.com/gin-gonic/gin"
-	"github.com/maczh/gintool"
-	"github.com/maczh/gintool/mgresult"
+	"github.com/maczh/mgin/middleware/cors"
+	"github.com/maczh/mgin/middleware/postlog"
+	"github.com/maczh/mgin/middleware/trace"
+	"github.com/maczh/mgin/models"
 	"github.com/maczh/mgrmq/controller"
-	"github.com/maczh/mgtrace"
-	"github.com/maczh/utils"
 
 	_ "github.com/maczh/mgrmq/docs"
+	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 )
 
-/**
+/*
+*
 统一路由映射入口
 */
 func setupRouter() *gin.Engine {
@@ -24,14 +25,12 @@ func setupRouter() *gin.Engine {
 	engine := gin.Default()
 
 	//添加跟踪日志
-	engine.Use(mgtrace.TraceId())
+	engine.Use(trace.TraceId())
 
 	//设置接口日志
-	engine.Use(gintool.SetRequestLogger())
+	engine.Use(postlog.RequestLogger())
 	//添加跨域处理
-	engine.Use(gintool.Cors())
-	//添加国际化支持
-	//engine.Use(mgerr.RequestLanguage())
+	engine.Use(cors.Cors())
 
 	//添加swagger支持
 	engine.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -41,19 +40,19 @@ func setupRouter() *gin.Engine {
 
 	//设置404返回的内容
 	engine.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusOK, mgresult.Error(-1, "404 Not Found"))
+		c.JSON(http.StatusOK, models.Error(-1, "404 Not Found"))
 	})
 
-	var result mgresult.Result
+	var result models.Result[any]
 	//添加所需的路由映射
 	//消息处理
 	engine.POST("/msg/send", func(c *gin.Context) {
-		result = controller.SendMessage(utils.GinParamMap(c))
+		result = controller.SendMessage(c)
 		c.JSON(http.StatusOK, result)
 	})
 
 	engine.POST("/msg/resend", func(c *gin.Context) {
-		result = controller.ReSendFailedMessage(utils.GinParamMap(c))
+		result = controller.ReSendFailedMessage(c)
 		c.JSON(http.StatusOK, result)
 	})
 
@@ -61,5 +60,5 @@ func setupRouter() *gin.Engine {
 }
 
 func recoveryHandler(c *gin.Context, err interface{}) {
-	c.JSON(http.StatusOK, mgresult.Error(-1, "System Error"))
+	c.JSON(http.StatusOK, models.Error(-1, "System Error"))
 }

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/maczh/gintool/mgresult"
-	"github.com/maczh/logs"
-	"github.com/maczh/mgconfig"
+	"github.com/maczh/mgin/logs"
+	"github.com/maczh/mgin/models"
+	"github.com/maczh/mgrabbit"
 	"github.com/maczh/mgrmq/mongo"
 )
 
@@ -13,15 +13,15 @@ func NewMessageService() *MessageService {
 	return &MessageService{}
 }
 
-func (s *MessageService) Send(queue, msg string) mgresult.Result {
+func (s *MessageService) Send(queue, msg string) models.Result[any] {
 	if _, ok := queues[queue]; !ok {
-		return mgresult.Error(-1, "消息队列名称不在配置中")
+		return models.Error(-1, "消息队列名称不在配置中")
 	}
-	mgconfig.RabbitSendMessage(queue, msg)
-	return mgresult.Success(nil)
+	mgrabbit.Rabbit.RabbitSendMessage(queue, msg)
+	return models.Success[any](nil)
 }
 
-func (s *MessageService) ReSend(queue, start, end string) mgresult.Result {
+func (s *MessageService) ReSend(queue, start, end string) models.Result[any] {
 	if queue == "" {
 		for q, job := range jobConfigs {
 			fails, err := mongo.NewFailLogMgo().List(job.FailLog, start, end)
@@ -37,11 +37,11 @@ func (s *MessageService) ReSend(queue, start, end string) mgresult.Result {
 		fails, err := mongo.NewFailLogMgo().List(jobConfigs[queue].FailLog, start, end)
 		if err != nil {
 			logs.Error("获取队列{}在{}到{}时间段内的失败日志失败:{}", queue, start, end, err.Error())
-			return mgresult.Error(-1, err.Error())
+			return models.Error(-1, err.Error())
 		}
 		for _, log := range fails {
 			s.Send(log.Queue, log.Msg)
 		}
 	}
-	return mgresult.Success(nil)
+	return models.Success[any](nil)
 }
