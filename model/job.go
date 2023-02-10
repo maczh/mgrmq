@@ -20,7 +20,8 @@ type MQjob struct {
 
 type MQjobConfig struct {
 	Mgrmq struct {
-		Jobs []MQjob `json:"jobs" yaml:"jobs"`
+		Jobs      []MQjob `json:"jobs" yaml:"jobs"`
+		ParamType string  `json:"paramType" yaml:"paramType"` //参数类型 map或options
 	} `json:"mgrmq" yaml:"mgrmq"`
 }
 

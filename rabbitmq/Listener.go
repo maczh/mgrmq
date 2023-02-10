@@ -17,12 +17,14 @@ import (
 )
 
 type QueueHandler struct {
-	Job model.MQjob
+	Job       model.MQjob
+	paramType string
 }
 
-func NewQueueHandler(job model.MQjob) *QueueHandler {
+func NewQueueHandler(job model.MQjob, paramType string) *QueueHandler {
 	handler := &QueueHandler{
-		Job: job,
+		Job:       job,
+		paramType: paramType,
 	}
 	return handler
 }
@@ -56,7 +58,19 @@ func (handler *QueueHandler) Listening(msg []byte) {
 		return
 	}
 	param := client.Options{}
-	utils.FromJSON(m, &param)
+	if handler.paramType == "map" {
+		paramsMap := make(map[string]string)
+		utils.FromJSON(m, &paramsMap)
+		param.Protocol = client.CONTENT_TYPE_FORM
+		param.Method = handler.Job.Method
+		if param.Method == "GET" {
+			param.Query = paramsMap
+		} else {
+			param.Data = paramsMap
+		}
+	} else {
+		utils.FromJSON(m, &param)
+	}
 	key := utils.MD5Encode(m)
 	v, found := cache.OnGetCache("counters").Value(key)
 	if found && v.(int) >= handler.Job.Retry {

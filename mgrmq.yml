@@ -3,19 +3,19 @@ go:
     name: mgrmq
     port: 8091
   config:
-    server: http://59.56.77.23:58848/
+    server: http://59.56.77.128:58848/
     server_type: nacos
     env: test
     type: .yml
     mid: "-"
     used: rabbitmq,nacos,mongodb
     prefix:
-      mysql: mysql-oss
-      mongodb: mongo-fcp
+      mysql: mysql
+      mongodb: mongo-opencloud
       redis: redis
       ssdb: ssdb
       rabbitmq: rabbitmq
-      nacos: nacos
+      nacos: nacos-opencloud
       influxdb: influxdb-oss
   log:
     req: mgrmqRequestLog

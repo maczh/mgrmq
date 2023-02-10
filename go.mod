@@ -2,6 +2,8 @@ module github.com/maczh/mgrmq
 
 go 1.19
 
+replace github.com/maczh/mgin v1.19.8 => ../mgin
+
 require (
 	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.2

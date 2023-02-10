@@ -20,6 +20,7 @@ func NewJobService() *JobService {
 	return &JobService{}
 }
 
+var ParamsType string
 var jobConfigs = make(map[string]model.MQjob)
 var queues = make(map[string]string)
 
@@ -52,6 +53,10 @@ func loadConfig() (model.MQjobConfig, error) {
 		logs.Error("yaml配置解析错误:{}", err.Error())
 		return jobConfig, err
 	}
+	if jobConfig.Mgrmq.ParamType == "" {
+		jobConfig.Mgrmq.ParamType = "options"
+	}
+	ParamsType = jobConfig.Mgrmq.ParamType
 	logs.Debug("mgrmq配置解析结果:{}", jobConfig)
 	for _, job := range jobConfig.Mgrmq.Jobs {
 		jobConfigs[job.Queue] = job
@@ -103,7 +108,7 @@ func (js *JobService) Init() {
 			logs.Error("死信队列延时interval值不能小于1，单位是秒")
 		}
 		mgrabbit.Rabbit.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
-		handler := rabbitmq.NewQueueHandler(job)
+		handler := rabbitmq.NewQueueHandler(job, jobConfig.Mgrmq.ParamType)
 		mgrabbit.Rabbit.RabbitMessageListener(job.Queue, handler.Listening)
 		logs.Debug("正在侦听{}队列", job.Queue)
 	}

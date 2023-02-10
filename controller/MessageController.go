@@ -19,7 +19,7 @@ var msgService = service.NewMessageService()
 // @Accept	x-www-form-urlencoded
 // @Produce json
 // @Param	queue formData string true "消息队列名"
-// @Param	msg formData string true "消息内容，必须是mgin中的client.Options格式"
+// @Param	msg formData string true "消息内容，必须是mgin中的client.Options格式或map格式，在yml文件中配置paramType"
 // @Success 200 {string} string	"ok"
 // @Router	/msg/send [post]
 func SendMessage(c *gin.Context) models.Result[any] {
@@ -42,10 +42,18 @@ func SendMessage(c *gin.Context) models.Result[any] {
 	if msg == "" {
 		return models.Error(-1, "消息内容不可为空")
 	}
-	var msgBody client.Options
-	err = json.Unmarshal([]byte(msg), &msgBody)
-	if err != nil || msgBody.Method == "" {
-		return models.Error(-1, "消息内容不正确")
+	if service.ParamsType == "map" {
+		m := map[string]string{}
+		err = json.Unmarshal([]byte(msg), &m)
+		if err != nil {
+			return models.Error(-1, "消息格式不正确，不是map格式")
+		}
+	} else {
+		var msgBody client.Options
+		err = json.Unmarshal([]byte(msg), &msgBody)
+		if err != nil || msgBody.Method == "" {
+			return models.Error(-1, "消息内容不正确")
+		}
 	}
 
 	return msgService.Send(queue, msg)
