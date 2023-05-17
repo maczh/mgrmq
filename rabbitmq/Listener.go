@@ -84,7 +84,7 @@ func (handler *QueueHandler) Listening(msg []byte) {
 	} else {
 		v = v.(int) + 1
 	}
-	cache.OnGetCache("counters").Add(key, v, time.Duration(handler.Job.Interval*2)*time.Second)
+	cache.OnGetCache("counters").Add(key, v, time.Duration(handler.Job.Interval*handler.Job.Retry*2)*time.Second)
 	begin := time.Now()
 	callLog := model.CallLog{
 		Id:       bson.NewObjectId(),
