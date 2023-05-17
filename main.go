@@ -9,6 +9,7 @@ import (
 	"github.com/maczh/mgin/config"
 	"github.com/maczh/mgin/logs"
 	"github.com/maczh/mgrabbit"
+	"github.com/maczh/mgrmq/controller"
 	"github.com/maczh/mgrmq/service"
 	"net/http"
 	"os"
@@ -47,6 +48,7 @@ func main() {
 	mgin.MGin.Use("rabbitmq", mgrabbit.Rabbit.Init, mgrabbit.Rabbit.Close, nil)
 
 	//任务服务初始化
+	controller.Init()
 	service.NewJobService().Init()
 
 	engine := setupRouter()

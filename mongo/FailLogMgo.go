@@ -15,8 +15,8 @@ func NewFailLogMgo() *FailLogMgo {
 	return &FailLogMgo{}
 }
 
-func (f *FailLogMgo) Save(collectionName string, log model.FailLog) error {
-	mongo, err := db.Mongo.GetConnection()
+func (f *FailLogMgo) Save(dbName, collectionName string, log model.FailLog) error {
+	mongo, err := db.Mongo.GetConnection(dbName)
 	if err != nil {
 		logs.Error("MongoDB connection error:{}", err.Error())
 		return err
@@ -26,8 +26,8 @@ func (f *FailLogMgo) Save(collectionName string, log model.FailLog) error {
 	return err
 }
 
-func (f *FailLogMgo) List(collection, start, end string) ([]model.FailLog, error) {
-	mongo, err := db.Mongo.GetConnection()
+func (f *FailLogMgo) List(dbName, collection, start, end string) ([]model.FailLog, error) {
+	mongo, err := db.Mongo.GetConnection(dbName)
 	if err != nil {
 		logs.Error("MongoDB connection error:{}", err.Error())
 		return nil, err

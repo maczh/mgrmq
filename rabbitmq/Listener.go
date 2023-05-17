@@ -5,11 +5,13 @@ import (
 	"github.com/levigross/grequests"
 	"github.com/maczh/mgin/cache"
 	"github.com/maczh/mgin/client"
+	"github.com/maczh/mgin/config"
 	"github.com/maczh/mgin/logs"
 	"github.com/maczh/mgin/utils"
 	"github.com/maczh/mgrabbit"
 	"github.com/maczh/mgrmq/model"
 	"github.com/maczh/mgrmq/mongo"
+	"github.com/valyala/fastjson"
 	"gopkg.in/mgo.v2/bson"
 	"net/url"
 	"strings"
@@ -19,12 +21,16 @@ import (
 type QueueHandler struct {
 	Job       model.MQjob
 	paramType string
+	multi     bool
+	dbName    string
 }
 
 func NewQueueHandler(job model.MQjob, paramType string) *QueueHandler {
 	handler := &QueueHandler{
 		Job:       job,
 		paramType: paramType,
+		multi:     config.Config.GetConfigBool("go.db.multi"),
+		dbName:    config.Config.GetConfigString("go.db.dbName"),
 	}
 	return handler
 }
@@ -40,14 +46,22 @@ func (handler *QueueHandler) LogFailed(msg string) {
 	if handler.Job.FailLog == "" {
 		return
 	}
-	mongo.NewFailLogMgo().Save(handler.Job.FailLog, failLog)
+	dbName := ""
+	if handler.paramType == "opt" && handler.multi {
+		dbName = fastjson.GetString([]byte(msg), "header", handler.dbName)
+	}
+	mongo.NewFailLogMgo().Save(dbName, handler.Job.FailLog, failLog)
 }
 
 func (handler *QueueHandler) LogCall(callLog model.CallLog) {
 	if handler.Job.ReqLog == "" {
 		return
 	}
-	mongo.NewCallLogMgo().Save(handler.Job.ReqLog, callLog)
+	dbName := ""
+	if handler.paramType == "opt" && handler.multi {
+		dbName = callLog.Params.(client.Options).Header.(map[string]string)[handler.dbName]
+	}
+	mongo.NewCallLogMgo().Save(dbName, handler.Job.ReqLog, callLog)
 }
 
 func (handler *QueueHandler) Listening(msg []byte) {
@@ -114,7 +128,16 @@ func (handler *QueueHandler) Listening(msg []byte) {
 			callLog.Response = resp.Msg
 			handler.LogCall(callLog)
 			if handler.Job.RetryOn == "failed" && v.(int) <= handler.Job.Retry {
-				mgrabbit.Rabbit.RabbitSendMessage(handler.Job.QueueDx, m)
+				dbName := ""
+				if handler.paramType == "opt" && handler.multi {
+					dbName = param.Header.(map[string]string)[handler.dbName]
+				}
+				conn, err := mgrabbit.Rabbit.GetConnection(dbName)
+				if err != nil {
+					logs.Error("获取RabbitMQ连接失败:{}", err.Error())
+					return
+				}
+				conn.RabbitSendMessage(handler.Job.QueueDx, m)
 			}
 			return
 		}
@@ -178,7 +201,16 @@ func (handler *QueueHandler) Listening(msg []byte) {
 			callLog.Response = err.Error()
 			handler.LogCall(callLog)
 			if v.(int) <= handler.Job.Retry {
-				mgrabbit.Rabbit.RabbitSendMessage(handler.Job.QueueDx, m)
+				dbName := ""
+				if handler.paramType == "opt" && handler.multi {
+					dbName = param.Header.(map[string]string)[handler.dbName]
+				}
+				conn, err := mgrabbit.Rabbit.GetConnection(dbName)
+				if err != nil {
+					logs.Error("获取RabbitMQ连接失败:{}", err.Error())
+					return
+				}
+				conn.RabbitSendMessage(handler.Job.QueueDx, m)
 			}
 			return
 		}
@@ -187,7 +219,16 @@ func (handler *QueueHandler) Listening(msg []byte) {
 			callLog.Response = resp.String()
 			handler.LogCall(callLog)
 			if v.(int) <= handler.Job.Retry {
-				mgrabbit.Rabbit.RabbitSendMessage(handler.Job.QueueDx, m)
+				dbName := ""
+				if handler.paramType == "opt" && handler.multi {
+					dbName = param.Header.(map[string]string)[handler.dbName]
+				}
+				conn, err := mgrabbit.Rabbit.GetConnection(dbName)
+				if err != nil {
+					logs.Error("获取RabbitMQ连接失败:{}", err.Error())
+					return
+				}
+				conn.RabbitSendMessage(handler.Job.QueueDx, m)
 			}
 			return
 		}
@@ -205,7 +246,16 @@ func (handler *QueueHandler) Listening(msg []byte) {
 			if !strings.Contains(resp.String(), handler.Job.Success) {
 				logs.Error("接口{}调用错误:{}", handler.Job.Url, resp.String())
 				if v.(int) <= handler.Job.Retry {
-					mgrabbit.Rabbit.RabbitSendMessage(handler.Job.QueueDx, m)
+					dbName := ""
+					if handler.paramType == "opt" && handler.multi {
+						dbName = param.Header.(map[string]string)[handler.dbName]
+					}
+					conn, err := mgrabbit.Rabbit.GetConnection(dbName)
+					if err != nil {
+						logs.Error("获取RabbitMQ连接失败:{}", err.Error())
+						return
+					}
+					conn.RabbitSendMessage(handler.Job.QueueDx, m)
 				}
 			}
 		}

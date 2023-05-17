@@ -82,7 +82,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "消息内容，必须是mgin中的client.Options格式",
+                        "description": "消息内容，必须是mgin中的client.Options格式或map格式，在yml文件中配置paramType",
                         "name": "msg",
                         "in": "formData",
                         "required": true

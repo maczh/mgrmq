@@ -94,6 +94,22 @@ func (js *JobService) Init() {
 		logs.Error("队列侦听任务配置错误或无任务配置")
 		return
 	}
+	if config.Config.GetConfigBool("go.db.multi") {
+		for _, connName := range mgrabbit.Rabbit.ListConnNames() {
+			js.initJobs(connName, jobConfig)
+		}
+	} else {
+		js.initJobs("", jobConfig)
+	}
+	logs.Debug("所有队列侦听任务初始化均已完成")
+}
+
+func (js JobService) initJobs(connName string, jobConfig model.MQjobConfig) {
+	conn, err := mgrabbit.Rabbit.GetConnection(connName)
+	if err != nil {
+		logs.Error("连接到RabbitMQ[{}]错误:{}", connName, err.Error())
+		return
+	}
 	for _, job := range jobConfig.Mgrmq.Jobs {
 		logs.Debug("正在初始化任务:{}", job.Name)
 		if job.QueueDx == "" {
@@ -107,10 +123,9 @@ func (js *JobService) Init() {
 		if job.Interval < 1 {
 			logs.Error("死信队列延时interval值不能小于1，单位是秒")
 		}
-		mgrabbit.Rabbit.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
+		conn.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
 		handler := rabbitmq.NewQueueHandler(job, jobConfig.Mgrmq.ParamType)
-		mgrabbit.Rabbit.RabbitMessageListener(job.Queue, handler.Listening)
+		conn.RabbitMessageListener(job.Queue, handler.Listening)
 		logs.Debug("正在侦听{}队列", job.Queue)
 	}
-	logs.Debug("所有队列侦听任务初始化均已完成")
 }

@@ -6,12 +6,13 @@ require (
 	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.2
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
-	github.com/maczh/mgin v1.19.23
-	github.com/maczh/mgrabbit v0.0.2
+	github.com/maczh/mgin v1.19.34
+	github.com/maczh/mgrabbit v0.0.5
 	github.com/nacos-group/nacos-sdk-go v1.1.4
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
-	github.com/swaggo/swag v1.8.2
+	github.com/swaggo/swag v1.8.10
+	github.com/valyala/fastjson v1.6.4
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gopkg.in/yaml.v3 v3.0.1
 )

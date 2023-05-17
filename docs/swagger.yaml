@@ -43,7 +43,7 @@ paths:
         name: queue
         required: true
         type: string
-      - description: 消息内容，必须是mgin中的client.Options格式
+      - description: 消息内容，必须是mgin中的client.Options格式或map格式，在yml文件中配置paramType
         in: formData
         name: msg
         required: true

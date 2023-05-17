@@ -12,8 +12,8 @@ func NewCallLogMgo() *CallLogMgo {
 	return &CallLogMgo{}
 }
 
-func (f *CallLogMgo) Save(collectionName string, log model.CallLog) error {
-	mongo, err := db.Mongo.GetConnection()
+func (f *CallLogMgo) Save(dbName, collectionName string, log model.CallLog) error {
+	mongo, err := db.Mongo.GetConnection(dbName)
 	if err != nil {
 		logs.Error("MongoDB connection error:{}", err.Error())
 		return err

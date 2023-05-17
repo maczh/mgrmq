@@ -23,6 +23,9 @@ go:
     level: debug
     out: console,file
     file: /opt/logs/mgrmq
+  db:
+    multi: true
+    dbName: Partner-Id
 rmq:
   config:
     prefix: mgrmq   #文件名前缀

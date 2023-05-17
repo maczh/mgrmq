@@ -10,7 +10,11 @@ import (
 	"github.com/maczh/mgrmq/service"
 )
 
-var msgService = service.NewMessageService()
+var msgService *service.MessageService
+
+func Init() {
+	msgService = service.NewMessageService()
+}
 
 // SendMessage	godoc
 // @Summary		发送一条消息到消息队列
