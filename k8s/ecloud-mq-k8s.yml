@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecloud-mq
+  namespace: ecloud
+  labels:
+    name: ecloud-mq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ecloud-mq
+  template:
+    metadata:
+      labels:
+        name: ecloud-mq
+    spec:
+      imagePullSecrets:
+        - name: dev.gamecdn
+      containers:
+        - name: ecloud-mq
+          imagePullPolicy: "Always"
+          image: dev.gamecdn.com:5000/mgrmq:latest
+          command:
+            - /apps/mgrmq
+            - -f
+            - /apps/yml/ecloud-mq.yml
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: logs
+              mountPath: /opt/logs
+            - name: yml
+              mountPath: /apps/yml
+      volumes:
+        - name: logs
+          hostPath:
+            path: /opt/k8s/shared/ecloud/logs
+        - name: yml
+          configMap:
+            name: ecloud-mq-cm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecloud-mq
+  namespace: ecloud
+  labels:
+    name: ecloud-mq
+spec:
+  #  type: NodePort
+  ports:
+    - port: 8216
+      name: ecloud-mq
+      targetPort: 80
+  selector:
+    name: ecloud-mq

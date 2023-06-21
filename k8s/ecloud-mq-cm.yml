@@ -1,0 +1,39 @@
+apiVersion: v1            #版本号，固定v1
+kind: ConfigMap           #资源类型，固定ConfigMap,作用是为Pod提供配置数据，公共kv，可以存放文本、文件、二进制数据
+metadata:                 #元数据
+  name: ecloud-mq-cm          #名称
+  namespace: ecloud
+data:                     #文本数据
+  ecloud-mq.yml: |
+    go:
+      application:
+        name: ecloud-mq
+        port: 80
+      config:
+        server: http://nacos-2.nacos-headless.opencloud.svc.cluster.local:8848/
+        server_type: nacos
+        env: test
+        type: .yml
+        mid: "-"
+        used: rabbitmq,nacos,mongodb
+        prefix:
+          mysql: mysql
+          mongodb: mongo-ecloud
+          redis: redis
+          ssdb: ssdb
+          rabbitmq: rabbitmq-ecloud
+          nacos: nacos-ecloud
+      log:
+        req: EcloudMqRequestLog
+        dbName: Partner-Id
+      logger:
+        level: debug
+        out: console,file
+        file: /opt/logs/ecloud-mq
+      db:
+        multi: true
+        dbName: Partner-Id
+    rmq:
+      config:
+        prefix: mgrmq-ecloud   #文件名前缀
+        source: nacos    #配置来源 file-本地文件 nacos-配置中心

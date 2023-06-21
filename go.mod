@@ -6,8 +6,8 @@ require (
 	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.2
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
-	github.com/maczh/mgin v1.19.34
-	github.com/maczh/mgrabbit v0.0.5
+	github.com/maczh/mgin v1.19.37
+	github.com/maczh/mgrabbit v0.0.7
 	github.com/nacos-group/nacos-sdk-go v1.1.4
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
@@ -42,7 +42,7 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/go-redis/redis v6.15.9+incompatible // indirect
+	github.com/go-redis/redis/v7 v7.4.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gofrs/uuid v4.1.0+incompatible // indirect
@@ -68,7 +68,7 @@ require (
 	github.com/knadh/koanf v1.4.3 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/maczh/jazz v1.0.0 // indirect
+	github.com/maczh/jazz v1.0.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
