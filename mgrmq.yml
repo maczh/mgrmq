@@ -2,6 +2,7 @@ go:
   application:
     name: mgrmq
     port: 8091
+    debug: true
   config:
     server: http://59.56.77.128:58848/
     server_type: nacos
@@ -11,22 +12,22 @@ go:
     used: rabbitmq,nacos,mongodb
     prefix:
       mysql: mysql
-      mongodb: mongo-opencloud
+      mongodb: mongo-cmp
       redis: redis
       ssdb: ssdb
       rabbitmq: rabbitmq
-      nacos: nacos-opencloud
+      nacos: nacos-cmp
       influxdb: influxdb-oss
   log:
     req: mgrmqRequestLog
   logger:
     level: debug
-    out: console,file
-    file: /opt/logs/mgrmq
+    out: console
+    file: /opt/logs/mgrmq-cmp
   db:
-    multi: true
+    multi: false
     dbName: Partner-Id
 rmq:
   config:
-    prefix: mgrmq   #文件名前缀
+    prefix: mgrmq-cmp   #文件名前缀
     source: nacos    #配置来源 file-本地文件 nacos-配置中心

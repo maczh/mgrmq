@@ -125,7 +125,7 @@ func (js JobService) initJobs(connName string, jobConfig model.MQjobConfig) {
 		}
 		conn.RabbitCreateDeadLetterQueue(job.QueueDx, job.Queue, job.Interval*1000)
 		handler := rabbitmq.NewQueueHandler(job, jobConfig.Mgrmq.ParamType)
-		conn.RabbitMessageListener(job.Queue, handler.Listening)
+		mgrabbit.Rabbit.RabbitMessageListener(connName, job.Queue, handler.Listening)
 		logs.Debug("正在侦听{}队列", job.Queue)
 	}
 }
